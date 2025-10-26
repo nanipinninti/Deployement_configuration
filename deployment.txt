@@ -1,0 +1,117 @@
+		FIRST TIME
+1) Installing Node.js, NPM, and Nginx
+
+sudo apt-get update -y
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs
+sudo apt install npm -y
+sudo apt install nginx -y
+
+2) git clone <repo>
+
+3) Install all depending (both frontend adn backend)
+
+4)  pm2 run servor continuously
+
+sudo npm install -g pm2
+
+move to backend servor ex : cd Auction/backend
+
+pm2 start index.js --name auction-backend
+pm2 startup
+pm2 save
+
+5) Frontend deploy.. move to frontend Auction/frontend
+
+sudo mkdir -p /var/www/vhosts/frontend/
+
+if we have dependency varibles in frontend
+
+sudo nano .env
+
+ex :  .env file 
+VITE_DOMAIN=https://www.nanipinninti.fun/api
+VITE_SOCKET_DOMAIN=https://www.nanipinninti.fun
+
+npm run build
+sudo cp -R dist/ /var/www/vhosts/frontend/
+
+6) Create Nginx file
+move back to home route -- cd
+delete default file
+
+cd /etc/nginx/sites-enabled/
+sudo rm -rf default
+
+sudo nano /etc/nginx/sites-available/Auction
+
+server {
+    listen 80;
+    server_name nanipinninti.fun www.nanipinninti.fun;
+
+    # Root Directory
+    root /var/www/vhosts/frontend/dist;
+    index index.html;
+
+    # Main Location (handle requests)
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Reverse Proxy for Backend APIs
+    location /api/ {
+        proxy_pass http://127.0.0.1:5001/;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_redirect off;
+    }
+
+    # WebSocket support for /socket.io/
+    location /socket.io/ {
+        proxy_pass http://127.0.0.1:5001/socket.io/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+}
+
+
+sudo ln -s /etc/nginx/sites-available/Auction /etc/nginx/sites-enabled/
+sudo systemctl restart nginx
+sudo service nginx restart
+
+
+7) Let's setup SSL certicate
+
+sudo apt-get install certbot python3-certbot-nginx
+sudo certbot --nginx -d www.nanipinninti.fun -d nanipinninti.fun
+sudo systemctl reload nginx
+
+AFTER COMITT
+
+1) For backend changes
+move to backendfiles
+
+cd Auction/backend
+pm2 kill
+git pull
+pm2 start index.js --name auction-backend
+pm2 startup
+pm2 save
+pm2 reload auction-backend
+
+2) for frontend changes
+
+cd
+cd Auction
+git pull
+cd frontend
+sudo nano .env
+npm run build
+sudo cp -R dist/ /var/www/vhosts/frontend/
+sudo service nginx restart
