@@ -30,8 +30,8 @@ if we have dependency varibles in frontend
 sudo nano .env
 
 ex :  .env file 
-VITE_DOMAIN=https://www.nanipinninti.fun/api
-VITE_SOCKET_DOMAIN=https://www.nanipinninti.fun
+VITE_DOMAIN=https://www.nanipinninti.me/api
+VITE_SOCKET_DOMAIN=https://www.nanipinninti.me
 
 npm run build
 sudo cp -R dist/ /var/www/vhosts/frontend/
@@ -47,7 +47,7 @@ sudo nano /etc/nginx/sites-available/Auction
 
 server {
     listen 80;
-    server_name nanipinninti.fun www.nanipinninti.fun;
+    server_name nanipinninti.me www.nanipinninti.me;
 
     # Root Directory
     root /var/www/vhosts/frontend/dist;
@@ -89,7 +89,7 @@ sudo service nginx restart
 7) Let's setup SSL certicate
 
 sudo apt-get install certbot python3-certbot-nginx
-sudo certbot --nginx -d www.nanipinninti.fun -d nanipinninti.fun
+sudo certbot --nginx -d www.nanipinninti.me -d nanipinninti.me
 sudo systemctl reload nginx
 
 AFTER COMITT
